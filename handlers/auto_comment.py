@@ -1,17 +1,19 @@
 from aiogram import F, types, Router
-from aiogram.utils.keyboard import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from config import settings
+from config import settings, chats  
 
 
 auto_comment_router = Router()
 auto_comment_router.message.filter(F.is_automatic_forward == True)
 
-button = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Чатик", url=settings.CHAT_URL), 
-    InlineKeyboardButton(text="Буст каналу", url=settings.BOOST_URL)]
-])
-
 @auto_comment_router.message()
 async def comment_cmd(message: types.Message):
-    await message.reply_photo(photo=settings.COMMENT_BANNER_FILE_ID, reply_markup=button)
+    chat_data = chats.get(str(message.chat.id))
+    
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Чатик", url=chat_data["chat_url"])
+    builder.button(text="Буст каналу", url=chat_data["boost_url"])
+    builder.adjust(2)
+
+    await message.reply_photo(photo=chat_data["comment_banner_file"], reply_markup=builder.as_markup())
