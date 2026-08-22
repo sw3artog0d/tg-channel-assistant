@@ -1,8 +1,17 @@
 from aiogram import Bot, Dispatcher
 import asyncio
+import logging
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("place_bot.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")
+    ]
+)
 
 from config import settings
-
 from handlers.auto_comment import auto_comment_router
 from utils.get_photo_id import photo_id_router
 

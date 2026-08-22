@@ -1,9 +1,12 @@
+import logging
+import asyncio
+
 from aiogram import F, types, Router
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-import asyncio
 
 from config import settings, chats 
 
+logger = logging.getLogger(__name__)
 
 auto_comment_router = Router()
 auto_comment_router.message.filter(F.is_automatic_forward == True)
@@ -21,11 +24,18 @@ async def handle_incoming_message(message: types.Message):
 
 async def answer_timer(message: types.Message):
     await asyncio.sleep(settings.ALBUM_DEBOUNCE_SECONDS)
-    await comment_cmd(message)
-    del media_group_tasks[message.media_group_id]
+    try:
+        await comment_cmd(message)
+    except Exception:
+        logger.exception("Ошибка при отправке комментария для media_group_id=%s", message.media_group_id)
+    finally:
+        del media_group_tasks[message.media_group_id]
 
 async def comment_cmd(message: types.Message):
     chat_data = chats.get(str(message.chat.id))
+    if chat_data is None:
+        logger.warning(f"Чат {message.chat.id} не найден в chats.json, пропускаю")
+        return
     
     builder = InlineKeyboardBuilder()
     builder.button(text="Чатик", url=chat_data["chat_url"])
