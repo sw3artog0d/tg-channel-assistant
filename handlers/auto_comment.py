@@ -18,18 +18,24 @@ async def handle_incoming_message(message: types.Message):
     if message.media_group_id is None:
         await comment_cmd(message)
     else:
-        if message.media_group_id not in media_group_tasks:
+        if message.media_group_id in media_group_tasks:
             media_group_tasks[message.media_group_id].cancel()
         media_group_tasks[message.media_group_id] = asyncio.create_task(answer_timer(message))
 
 async def answer_timer(message: types.Message):
+    current_task = asyncio.current_task()
     await asyncio.sleep(settings.ALBUM_DEBOUNCE_SECONDS)
     try:
         await comment_cmd(message)
     except Exception:
-        logger.exception("Ошибка при отправке комментария для media_group_id=%s", message.media_group_id)
+        logger.exception(
+            "Не удалось отправить комментарий в chat_id=%s c media_group_id=%s",
+            message.chat.id,
+            message.media_group_id,
+        )
     finally:
-        del media_group_tasks[message.media_group_id]
+        if media_group_tasks.get(message.media_group_id) is current_task:
+            del media_group_tasks[message.media_group_id]
 
 async def comment_cmd(message: types.Message):
     chat_data = chats.get(str(message.chat.id))

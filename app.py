@@ -1,13 +1,14 @@
 from aiogram import Bot, Dispatcher
 import asyncio
 import logging
+from logging.handlers import RotatingFileHandler
 
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("place_bot.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")
+        RotatingFileHandler("place_bot.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")
     ]
 )
 
