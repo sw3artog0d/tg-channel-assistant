@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Configuration data files
+chats.json
+
 # C extensions
 *.so
 
